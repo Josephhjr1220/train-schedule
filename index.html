@@ -12,7 +12,9 @@
 
 	<!-- firebase -->
 	<script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
-
+	
+	<!-- moment.js -->
+	 <script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
 
 </head>
 <body>
@@ -43,14 +45,7 @@
 	      </tr>
     	</thead>
     	<tbody>
-<!-- 	      <tr>
-	    	<td id="name-display"></td>
-	        <td id="destination-display"></td>
-	        <td id="time-display"></td>
-	        <td id="frequency-display"></td>
-	        <td id="arrival-display"></td>
-	        <td id="away-display"></td>
-	      </tr> -->
+
    		</tbody>
   		</table>
 	  </div>
@@ -72,7 +67,7 @@
 
 			<div class="form-group">
 			  <label>First Train Time (HH:mm - military time)</label>
-			  <input type="military-time" class="form-control" id="time-input">
+			  <input type="text" class="form-control" id="first-train-input">
 			</div>
 
 			<div class="form-group">
@@ -81,12 +76,13 @@
 			</form>  
 		</div>
 	</div>
-	<button type="submit" class="btn btn-primary" id="add-user">Submit</button>
+		<button type="submit" class="btn btn-primary" id="add-train">Submit</button>
 	</form>
 </div>
 
 <script type="text/javascript">
-	  // Initialize Firebase
+	  
+	// Initialize Firebase
 	var config = {
 	    apiKey: "AIzaSyC7aew1chotrzpWbkoc-5rE8SxaiKId10g",
 	    authDomain: "train-schedule-9b9c3.firebaseapp.com",
@@ -97,6 +93,56 @@
 	  };
 	  firebase.initializeApp(config);
 
+	var database = firebase.database();
+
+	//  Button for adding train
+	$("#add-train").on("click", function(event) {
+	event.preventDefault();
+
+	// Grabs user input
+	var trainName = $("#name-input").val().trim();
+	var trainDestinaton = $("#destination-input").val().trim();
+	var trainFirst = moment($("#first-train-input").val().trim(), "HH:mm").format("X");
+	var trainFrequency = $("#frequency-input").val().trim();
+
+	// Creates local "temporary" object for holding train data
+	var newTrain = {
+	    name: trainName,
+	    destination: trainDestinaton,
+	    firstTrain: trainFirst,
+	    frequency: trainFrequency
+	  };
+
+	// Uploads train data to the database
+	database.ref().push(newTrain);
+
+	$("#name-input").val("");
+  	$("#destination-input").val("");
+	$("#first-train-input").val("");
+	$("#frequency-input").val("");
+
+	database.ref().on("child_added", function(childSnapshot, prevChildKey) {
+
+	var trainName = childSnapshot.val().name;
+	var trainDestinaton = childSnapshot.val().destination;
+	var trainFirst = childSnapshot.val().time;
+	var trainFrequency = childSnapshot.val().frequency;
+
+	var time = moment.unix(trainFirst).format("");
+
+	var differenceTimes = moment().diff(moment.unix(trainFirst), "minutes");
+
+	var trainModulus = moment().diff(moment.unix(trainFirst), "minutes") % trainFrequency;
+
+	var trainMinutes = trainFrequency - trainModulus;
+
+	var trainArrival = moment().add(trainMinutes, "m").format("hh:mm A");
+
+  // Add each train's data into the table
+  	$(".table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + trainFrequency + "</td><td>" + trainArrival + "</td><td>" + trainMinutes + "</td></tr>");
+});
+
+});
 
 </script>
 
