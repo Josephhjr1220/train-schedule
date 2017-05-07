@@ -95,10 +95,6 @@
 
 	var database = firebase.database();
 
-	//  Button for adding train
-	$("#add-train").on("click", function(event) {
-	event.preventDefault();
-
 	// Grabs user input
 	var trainName = $("#name-input").val().trim();
 	var trainDestinaton = $("#destination-input").val().trim();
@@ -137,6 +133,10 @@
 	var trainMinutes = trainFrequency - trainModulus;
 
 	var trainArrival = moment().add(trainMinutes, "m").format("hh:mm A");
+
+	//  Button for adding train
+	$("#add-train").on("click", function(event) {
+	event.preventDefault();
 
   // Add each train's data into the table
   	$(".table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + trainFrequency + "</td><td>" + trainArrival + "</td><td>" + trainMinutes + "</td></tr>");
