@@ -44,7 +44,7 @@
 	        <th>Minutes Away</th>
 	      </tr>
     	</thead>
-    	<tbody>
+    	<tbody id= "table-body">
 
    		</tbody>
   		</table>
@@ -82,6 +82,7 @@
 
 <script type="text/javascript">
 	  
+
 	// Initialize Firebase
 	var config = {
 	    apiKey: "AIzaSyC7aew1chotrzpWbkoc-5rE8SxaiKId10g",
@@ -95,19 +96,23 @@
 
 	var database = firebase.database();
 
+	//  Button for adding train
+	$("#add-train").on("click", function(event) {
+		event.preventDefault();
+
 	// Grabs user input
 	var trainName = $("#name-input").val().trim();
-	var trainDestinaton = $("#destination-input").val().trim();
-	var trainFirst = moment($("#first-train-input").val().trim(), "HH:mm").format("X");
+	var trainDestination = $("#destination-input").val().trim();
+	var firstTrain = moment($("#first-train-input").val().trim(), "HH:mm").format("X");
 	var trainFrequency = $("#frequency-input").val().trim();
 
 	// Creates local "temporary" object for holding train data
 	var newTrain = {
 	    name: trainName,
-	    destination: trainDestinaton,
-	    firstTrain: trainFirst,
+	    destination: trainDestination,
+	    firstTrain: firstTrain,
 	    frequency: trainFrequency
-	  };
+	}
 
 	// Uploads train data to the database
 	database.ref().push(newTrain);
@@ -117,32 +122,29 @@
 	$("#first-train-input").val("");
 	$("#frequency-input").val("");
 
+	});
+
 	database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-	var trainName = childSnapshot.val().name;
-	var trainDestinaton = childSnapshot.val().destination;
-	var trainFirst = childSnapshot.val().time;
-	var trainFrequency = childSnapshot.val().frequency;
+		var trainName = childSnapshot.val().name;
+		var trainDestination = childSnapshot.val().destination;
+		var firstTrain = childSnapshot.val().time;
+		var trainFrequency = childSnapshot.val().frequency;
 
-	var time = moment.unix(trainFirst).format("");
+		var time = moment.unix(firstTrain).format("minutes");
 
-	var differenceTimes = moment().diff(moment.unix(trainFirst), "minutes");
+		var differenceTimes = moment().diff(moment.unix(firstTrain), "minutes");
 
-	var trainModulus = moment().diff(moment.unix(trainFirst), "minutes") % trainFrequency;
+		var trainModulus = moment().diff(moment.unix(firstTrain), "minutes") % trainFrequency;
 
-	var trainMinutes = trainFrequency - trainModulus;
+		var trainMinutes = trainFrequency - trainModulus;
 
-	var trainArrival = moment().add(trainMinutes, "m").format("hh:mm A");
-
-	//  Button for adding train
-	$("#add-train").on("click", function(event) {
-	event.preventDefault();
+		var trainArrival = moment().add(trainMinutes, "m").format("hh:mm A");
 
   // Add each train's data into the table
-  	$(".table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + trainFrequency + "</td><td>" + trainArrival + "</td><td>" + trainMinutes + "</td></tr>");
+  	$("#table-body").append("<tr><td>" + trainName + "</td><td>" + trainDestination + "</td><td>" + trainFrequency + "</td><td>" + trainArrival + "</td><td>" + trainMinutes + "</td></tr>");
 });
 
-});
 
 </script>
 
